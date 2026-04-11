@@ -514,7 +514,7 @@ export default function Home() {
             Send an email
           </a>
           <a
-            href="https://linkedin.com/in/arthur-gagniare"
+            href="https://www.linkedin.com/in/arthur-gagniare-6799761b6/"
             target="_blank"
             rel="noopener noreferrer"
             style={{
