@@ -1,5 +1,7 @@
 "use client";
 
+const HEADING_FONT = "var(--font-michroma), 'Eurostile', 'Bank Gothic', sans-serif";
+
 /* ─── Tokens ───────────────────────────────────────────────────── */
 const T = {
   bg: "#0f1117",
@@ -134,11 +136,12 @@ export default function Home() {
 
         <h1
           style={{
-            fontSize: "clamp(2.4rem, 6vw, 4rem)",
-            fontWeight: 300,
-            letterSpacing: "-2px",
+            fontFamily: HEADING_FONT,
+            fontSize: "clamp(2rem, 5vw, 3.2rem)",
+            fontWeight: 400,
+            letterSpacing: "0.05em",
             color: T.heading,
-            lineHeight: 1.0,
+            lineHeight: 1.1,
             marginBottom: 24,
             maxWidth: 640,
           }}
@@ -233,9 +236,10 @@ export default function Home() {
           <div>
             <h2
               style={{
-                fontSize: 28,
-                fontWeight: 300,
-                letterSpacing: "-0.64px",
+                fontFamily: HEADING_FONT,
+                fontSize: 22,
+                fontWeight: 400,
+                letterSpacing: "0.04em",
                 color: T.heading,
                 lineHeight: 1.2,
                 marginBottom: 16,
@@ -342,9 +346,10 @@ export default function Home() {
           <Label>Projects</Label>
           <h2
             style={{
-              fontSize: 28,
-              fontWeight: 300,
-              letterSpacing: "-0.64px",
+              fontFamily: HEADING_FONT,
+              fontSize: 22,
+              fontWeight: 400,
+              letterSpacing: "0.05em",
               color: T.heading,
               marginTop: 12,
               marginBottom: 36,
@@ -457,9 +462,10 @@ export default function Home() {
       >
         <h2
           style={{
-            fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
-            fontWeight: 300,
-            letterSpacing: "-1px",
+            fontFamily: HEADING_FONT,
+            fontSize: "clamp(1.4rem, 3.5vw, 2.2rem)",
+            fontWeight: 400,
+            letterSpacing: "0.05em",
             color: T.heading,
             marginBottom: 16,
           }}
@@ -588,11 +594,13 @@ function ProjectCard({
   description,
   tags,
   highlight,
+  link,
 }: {
   title: string;
   description: string;
   tags: string[];
   highlight?: string;
+  link?: string;
 }) {
   return (
     <div
@@ -627,9 +635,10 @@ function ProjectCard({
       )}
       <h3
         style={{
-          fontSize: 17,
-          fontWeight: 300,
-          letterSpacing: "-0.3px",
+          fontFamily: HEADING_FONT,
+          fontSize: 14,
+          fontWeight: 400,
+          letterSpacing: "0.04em",
           color: T.heading,
           lineHeight: 1.3,
         }}
@@ -646,7 +655,7 @@ function ProjectCard({
       >
         {description}
       </p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
         {tags.map((tag) => (
           <span
             key={tag}
@@ -662,6 +671,34 @@ function ProjectCard({
             {tag}
           </span>
         ))}
+        {link && (
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              marginLeft: "auto",
+              fontSize: 11,
+              fontWeight: 400,
+              color: T.label,
+              textDecoration: "none",
+              border: `1px solid ${T.border}`,
+              padding: "3px 10px",
+              borderRadius: 4,
+              transition: "color 0.15s, border-color 0.15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = T.heading;
+              e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = T.label;
+              e.currentTarget.style.borderColor = T.border;
+            }}
+          >
+            Live demo ↗
+          </a>
+        )}
       </div>
     </div>
   );
@@ -767,8 +804,9 @@ const projects = [
     title: "Credit Default Prediction Model",
     highlight: "ML · Finance",
     description:
-      "Gradient boosting classifier (XGBoost + SHAP explainability) trained on the UCI credit dataset. Includes feature engineering on payment history, SMOTE oversampling for class imbalance, and a Power BI dashboard for loan officer review.",
-    tags: ["Python", "XGBoost", "SHAP", "scikit-learn", "Power BI"],
+      "Gradient boosting classifier (XGBoost + SHAP explainability) trained on the UCI credit dataset. Includes feature engineering on payment history, SMOTE oversampling for class imbalance, and an interactive Streamlit dashboard.",
+    tags: ["Python", "XGBoost", "SHAP", "scikit-learn", "Streamlit"],
+    link: "https://credit-risk-model-agagniare.streamlit.app/",
   },
   {
     title: "Multilingual VoC NLP Pipeline",
