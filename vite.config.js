@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  base: '/eurjpy-monitor/',
+  base: '/EUR-JPY-Monitor/',
   plugins: [react(), tailwindcss()],
   test: {
     environment: 'jsdom',
