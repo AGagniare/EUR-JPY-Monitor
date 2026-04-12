@@ -10,7 +10,7 @@ const TABS = ['Dashboard', 'Monte Carlo', 'Event Radar', 'My Calls', 'Calculator
 
 export default function App() {
   const [tab, setTab] = useState('Dashboard')
-  const { liveRate, history, loading, lastUpdated } = useEURJPY(365)
+  const { liveRate, history, loading, lastUpdated, histError } = useEURJPY(365)
   const prices = history.map((h) => h.rate)
 
   return (
@@ -55,7 +55,7 @@ export default function App() {
           <div className="text-white/30 text-sm">Loading market data…</div>
         ) : (
           <>
-            {tab === 'Dashboard'   && <Dashboard  liveRate={liveRate} history={history} prices={prices} />}
+            {tab === 'Dashboard'   && <Dashboard  liveRate={liveRate} history={history} prices={prices} histError={histError} />}
             {tab === 'Monte Carlo' && <MonteCarlo prices={prices} />}
             {tab === 'Event Radar' && <EventRadar />}
             {tab === 'My Calls'   && <MyCalls    liveRate={liveRate} />}

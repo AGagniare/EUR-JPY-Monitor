@@ -9,13 +9,29 @@ async function fetchHistorical(days) {
   const start = new Date()
   start.setDate(start.getDate() - days)
   const fmt = (d) => d.toISOString().split('T')[0]
-  const url = `https://api.frankfurter.app/${fmt(start)}..${fmt(end)}?from=EUR&to=JPY`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Historical fetch failed: ${res.status}`)
-  const data = await res.json()
-  return Object.entries(data.rates)
-    .map(([date, v]) => ({ date, rate: v.JPY }))
-    .sort((a, b) => a.date.localeCompare(b.date))
+  // Try frankfurter.dev (community-maintained) first, fall back to frankfurter.app
+  const urls = [
+    `https://api.frankfurter.dev/v1/${fmt(start)}..${fmt(end)}?base=EUR&symbols=JPY`,
+    `https://api.frankfurter.app/${fmt(start)}..${fmt(end)}?from=EUR&to=JPY`,
+  ]
+  let lastErr
+  for (const url of urls) {
+    try {
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      const rates = data.rates ?? data.Rates
+      if (!rates) throw new Error('No rates field in response')
+      return Object.entries(rates)
+        .map(([date, v]) => ({ date, rate: v.JPY ?? v.jpy }))
+        .filter((r) => r.rate != null)
+        .sort((a, b) => a.date.localeCompare(b.date))
+    } catch (e) {
+      lastErr = e
+      console.warn(`fetchHistorical failed for ${url}:`, e)
+    }
+  }
+  throw lastErr
 }
 
 /**
@@ -27,6 +43,7 @@ async function fetchHistorical(days) {
  *   history: { date: string, rate: number }[],
  *   loading: boolean,
  *   lastUpdated: Date | null,
+ *   histError: string | null,
  * }}
  */
 export function useEURJPY(days = 365) {
@@ -40,6 +57,7 @@ export function useEURJPY(days = 365) {
     try { return JSON.parse(sessionStorage.getItem(LIVE_CACHE)) == null } catch { return true }
   })
   const [lastUpdated, setLastUpdated] = useState(null)
+  const [histError, setHistError] = useState(null)
   const timerRef = useRef(null)
 
   useEffect(() => {
@@ -68,13 +86,15 @@ export function useEURJPY(days = 365) {
           setHistory(hist)
           sessionStorage.setItem(HIST_CACHE, JSON.stringify(hist))
         }
-      } catch (e) { console.error('Historical fetch failed:', e) }
-      finally { if (!cancelled) setLoading(false) }
+      } catch (e) {
+        console.error('Historical fetch failed:', e)
+        if (!cancelled) setHistError(e.message)
+      } finally { if (!cancelled) setLoading(false) }
     }
     init()
     timerRef.current = setInterval(refreshLive, 60_000)
     return () => { cancelled = true; clearInterval(timerRef.current) }
   }, [days])
 
-  return { liveRate, history, loading, lastUpdated }
+  return { liveRate, history, loading, lastUpdated, histError }
 }

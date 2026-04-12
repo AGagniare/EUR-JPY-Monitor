@@ -22,14 +22,23 @@ function SignalBadge({ signal }) {
   )
 }
 
-export default function Dashboard({ liveRate, history, prices }) {
+export default function Dashboard({ liveRate, history, prices, histError }) {
   const [period, setPeriod] = useState('30d')
   const [showBB, setShowBB] = useState(false)
 
   if (!history.length) {
     return (
-      <div className="text-white/30 text-sm py-8 text-center">
-        Unable to load historical data. Check your connection and refresh.
+      <div className="py-8 text-center space-y-2">
+        <div className="text-white/50 text-sm">Unable to load historical data.</div>
+        {histError && (
+          <div className="text-red-400/70 text-xs font-mono">{histError}</div>
+        )}
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-2 px-4 py-2 text-xs border border-white/20 text-white/50 rounded hover:text-white/80 hover:border-white/40 transition-colors"
+        >
+          Retry
+        </button>
       </div>
     )
   }
