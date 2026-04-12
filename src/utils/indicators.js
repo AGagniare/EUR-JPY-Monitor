@@ -5,6 +5,7 @@
  * @returns {(number|null)[]}
  */
 export function sma(data, period) {
+  if (period <= 0) throw new RangeError(`period must be >= 1, got ${period}`)
   return data.map((_, i) => {
     if (i < period - 1) return null
     const slice = data.slice(i - period + 1, i + 1)
@@ -19,6 +20,7 @@ export function sma(data, period) {
  * @returns {(number|null)[]}
  */
 export function rsi(closes, period = 14) {
+  if (period <= 0) throw new RangeError(`period must be >= 1, got ${period}`)
   const results = closes.map(() => null)
   if (closes.length < period + 1) return results
 
@@ -54,6 +56,7 @@ export function rsi(closes, period = 14) {
  * @returns {{ upper: number|null, middle: number|null, lower: number|null }[]}
  */
 export function bollingerBands(data, period = 20, stdDevMultiplier = 2) {
+  if (period <= 0) throw new RangeError(`period must be >= 1, got ${period}`)
   const middles = sma(data, period)
   return data.map((_, i) => {
     if (middles[i] === null) return { upper: null, middle: null, lower: null }

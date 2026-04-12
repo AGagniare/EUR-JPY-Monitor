@@ -31,14 +31,14 @@ describe('rsi', () => {
   it('returns 100 on a continuously rising series', () => {
     const result = rsi(RISING, 14)
     expect(result[14]).toBeCloseTo(100, 0)
+    expect(result[result.length - 1]).toBeCloseTo(100, 0)
   })
 
   it('returns ~50 on alternating series', () => {
     const alternating = Array.from({ length: 30 }, (_, i) => 100 + (i % 2 === 0 ? 1 : -1))
     const result = rsi(alternating, 14)
     const last = result[result.length - 1]
-    expect(last).toBeGreaterThan(40)
-    expect(last).toBeLessThan(60)
+    expect(last).toBeCloseTo(50, -1)
   })
 
   it('output length equals input length', () => {
