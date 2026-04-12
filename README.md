@@ -1,16 +1,69 @@
-# React + Vite
+# EUR/JPY Monitor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Bloomberg-style EUR/JPY monitoring dashboard. Live rates, technical indicators, Monte Carlo simulation, macro event radar, personal trade log, and conversion calculator.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Module | Description |
+|--------|-------------|
+| Dashboard | Live rate, SMA(7/30), RSI(14), Bollinger Bands, 52-week range, signal badge |
+| Monte Carlo | 1,000 paths, t-distribution (df=5), fan chart with 50%/80%/95% confidence bands |
+| Event Radar | ECB, BoJ, CPI calendar with estimated move sizes |
+| My Calls | Personal trade log — direction, timeframe, confidence, auto-resolution, win-rate stats |
+| Calculator | EUR → JPY with historical context and Wise deep link |
+| AI (optional) | Claude explains the current signal in plain English |
 
-## React Compiler
+## Quick Start
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+git clone https://github.com/AGagniare/eurjpy-monitor.git
+cd eurjpy-monitor
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Open http://localhost:5173
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## APIs Used
+
+| API | Purpose | Key required |
+|-----|---------|--------------|
+| open.er-api.com | Live EUR/JPY rate (refreshed every 60s) | No |
+| api.frankfurter.app | Historical daily rates | No |
+| api.anthropic.com | AI signal interpretation (optional) | Yes — your own key |
+
+## Claude AI Integration (optional)
+
+1. Get an API key at [console.anthropic.com](https://console.anthropic.com)
+2. In the app → Dashboard → "AI Signal Interpretation" → "set API key"
+3. Your key is stored in **your browser's localStorage only** — never sent anywhere else
+
+## Signal Logic
+
+| Signal | Condition |
+|--------|-----------|
+| **GOOD** | RSI(14) < 40 **and** rate below SMA(30) — oversold, potential entry |
+| **WAIT** | RSI(14) > 70 — overbought |
+| **NEUTRAL** | Otherwise |
+
+## Updating the Event Calendar
+
+Edit `src/data/events.js`. Add objects following this shape:
+
+```js
+{ date: 'YYYY-MM-DD', type: 'ECB', name: 'ECB Rate Decision', impact: 'high', avgMove: 80 }
+```
+
+`impact`: `'high'` or `'medium'`. `avgMove`: typical absolute EUR/JPY pips on the day.  
+Update quarterly (ECB and BoJ meet ~every 6 weeks; CPI is monthly).
+
+## Deploy
+
+```bash
+npm run build
+# Deploy dist/ to Vercel, Netlify, or GitHub Pages
+```
+
+## Stack
+
+Vite · React 18 · Tailwind CSS · Recharts · open.er-api.com · Frankfurter API · Anthropic API (optional)
