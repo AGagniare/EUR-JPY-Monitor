@@ -4,6 +4,8 @@ import {
   ResponsiveContainer, BarChart, Bar, Cell, ReferenceLine,
 } from 'recharts'
 import { useIndicators } from '../hooks/useIndicators'
+import ClaudeSignal from './ClaudeSignal'
+import { EVENTS } from '../data/events'
 
 const PERIODS = ['7d', '30d', '90d', '1y']
 
@@ -178,6 +180,15 @@ export default function Dashboard({ liveRate, history, prices }) {
           {pos52.toFixed(0)}th percentile of 52-week range
         </div>
       </div>
+
+      {/* Claude signal interpretation */}
+      <ClaudeSignal
+        liveRate={liveRate}
+        signal={signal}
+        latestRSI={latestRSI}
+        latestSMA30={latestSMA30}
+        events={EVENTS}
+      />
     </div>
   )
 }
