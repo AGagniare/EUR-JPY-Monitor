@@ -5,7 +5,8 @@ function fmt(n, dec = 0) {
   return n.toLocaleString('en', { minimumFractionDigits: dec, maximumFractionDigits: dec })
 }
 
-export default function Calculator({ liveRate, history }) {
+export default function Calculator({ liveRate, history, pair }) {
+  const { base = 'EUR', quote = 'JPY', baseSymbol = '€', quoteSymbol = '¥', decimals = 2, label = 'EUR/JPY' } = pair ?? {}
   const [eur, setEur] = useState('1000')
   const amount = parseFloat(eur) || 0
 
@@ -34,16 +35,16 @@ export default function Calculator({ liveRate, history }) {
     { label: '30 days ago',     rate: stats.rate30dAgo,diff: amount * (stats.rate30dAgo - liveRate) },
   ] : []
 
-  const jpy     = amount * (liveRate ?? 0)
-  const wiseUrl = `https://wise.com/send#payAgain?amount=${amount}&sourceCurrency=EUR&targetCurrency=JPY`
+  const result  = amount * (liveRate ?? 0)
+  const wiseUrl = `https://wise.com/send#payAgain?amount=${amount}&sourceCurrency=${base}&targetCurrency=${quote}`
 
   return (
     <div className="space-y-6 max-w-lg">
       {/* Input */}
       <div className="bg-card rounded-lg p-4">
-        <label className="text-xs text-white/35 uppercase tracking-widest block mb-3">EUR amount</label>
+        <label className="text-xs text-white/35 uppercase tracking-widest block mb-3">{base} amount</label>
         <div className="flex items-center gap-3">
-          <span className="text-white/40">€</span>
+          <span className="text-white/40">{baseSymbol}</span>
           <input
             type="number"
             value={eur}
@@ -52,7 +53,7 @@ export default function Calculator({ liveRate, history }) {
           />
         </div>
         <div className="mt-3 text-xl text-white/65">
-          = ¥{fmt(jpy)}
+          = {quoteSymbol}{fmt(result, decimals > 2 ? 2 : 0)}
         </div>
       </div>
 
@@ -64,7 +65,7 @@ export default function Calculator({ liveRate, history }) {
               <tr className="border-b border-white/10 text-white/30 uppercase tracking-widest">
                 <th className="px-4 py-3 text-left">Scenario</th>
                 <th className="px-4 py-3 text-right">Rate</th>
-                <th className="px-4 py-3 text-right">¥ received</th>
+                <th className="px-4 py-3 text-right">{quoteSymbol} received</th>
                 <th className="px-4 py-3 text-right">Difference</th>
               </tr>
             </thead>
@@ -75,7 +76,7 @@ export default function Calculator({ liveRate, history }) {
                 return (
                   <tr key={i} className={`border-b border-white/5 ${row.highlight ? 'bg-white/[0.03]' : ''}`}>
                     <td className="px-4 py-3 text-white/65">{row.label}</td>
-                    <td className="px-4 py-3 text-right text-white/50">{row.rate?.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right text-white/50">{row.rate?.toFixed(decimals)}</td>
                     <td className="px-4 py-3 text-right text-white">{fmt(received)}</td>
                     <td className={`px-4 py-3 text-right ${
                       row.diff === 0 ? 'text-white/20'

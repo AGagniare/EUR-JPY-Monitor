@@ -3,7 +3,7 @@ import { useState } from 'react'
 const MODEL  = 'claude-sonnet-4-6'
 const LS_KEY = 'anthropic_api_key'
 
-export default function ClaudeSignal({ liveRate, signal, latestRSI, latestSMA30, events }) {
+export default function ClaudeSignal({ liveRate, signal, latestRSI, latestSMA30, events, pair }) {
   const [apiKey,         setApiKey]         = useState(() => localStorage.getItem(LS_KEY) ?? '')
   const [showKeyInput,   setShowKeyInput]   = useState(!localStorage.getItem(LS_KEY))
   const [interpretation, setInterpretation] = useState(null)
@@ -27,14 +27,16 @@ export default function ClaudeSignal({ liveRate, signal, latestRSI, latestSMA30,
       .map((e) => `${e.date} — ${e.name} (${e.impact} impact)`)
       .join('; ')
 
+    const pairLabel = pair?.label ?? 'EUR/JPY'
+    const dec = pair?.decimals ?? 2
     const prompt = [
-      `EUR/JPY is currently at ${liveRate.toFixed(2)}.`,
+      `${pairLabel} is currently at ${liveRate.toFixed(dec)}.`,
       `RSI(14): ${latestRSI?.toFixed(1) ?? 'N/A'}.`,
-      `Rate is ${latestSMA30 && liveRate ? (liveRate > latestSMA30 ? 'above' : 'below') : 'near'} SMA(30) of ${latestSMA30?.toFixed(2) ?? 'N/A'}.`,
+      `Rate is ${latestSMA30 && liveRate ? (liveRate > latestSMA30 ? 'above' : 'below') : 'near'} SMA(30) of ${latestSMA30?.toFixed(dec) ?? 'N/A'}.`,
       `Signal badge: ${signal}.`,
-      `Upcoming macro events (next 14 days): ${upcoming || 'none known'}.`,
-      'In 2–3 plain sentences, explain what this means for someone watching EUR/JPY. Be concise and factual.',
-    ].join(' ')
+      upcoming ? `Upcoming macro events (next 14 days): ${upcoming}.` : '',
+      `In 2–3 plain sentences, explain what this means for someone watching ${pairLabel}. Be concise and factual.`,
+    ].filter(Boolean).join(' ')
 
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {

@@ -3,29 +3,45 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
 
-const LS_KEY  = 'eurjpy_calls'
 const TF_DAYS = { '1d': 1, '3d': 3, '7d': 7, '30d': 30 }
 const TFS     = ['1d', '3d', '7d', '30d']
 
-function loadCalls() {
-  try { return JSON.parse(localStorage.getItem(LS_KEY)) ?? [] } catch { return [] }
+function lsKey(base, quote) {
+  return `${base.toLowerCase()}${quote.toLowerCase()}_calls`
 }
 
-async function fetchRateOnDate(dateStr) {
-  const res  = await fetch(`https://api.frankfurter.app/${dateStr}?from=EUR&to=JPY`)
-  if (!res.ok) throw new Error(`Rate fetch failed: ${res.status}`)
-  const data = await res.json()
-  return data?.rates?.JPY ?? null
+function loadCalls(base, quote) {
+  try { return JSON.parse(localStorage.getItem(lsKey(base, quote))) ?? [] } catch { return [] }
 }
 
-export default function MyCalls({ liveRate }) {
-  const [calls,      setCalls]      = useState(loadCalls)
+async function fetchRateOnDate(dateStr, base, quote) {
+  const urls = [
+    `https://api.frankfurter.dev/v1/${dateStr}?base=${base}&symbols=${quote}`,
+    `https://api.frankfurter.app/${dateStr}?from=${base}&to=${quote}`,
+  ]
+  for (const url of urls) {
+    try {
+      const res  = await fetch(url)
+      if (!res.ok) continue
+      const data = await res.json()
+      return data?.rates?.[quote] ?? null
+    } catch { /* try next */ }
+  }
+  return null
+}
+
+export default function MyCalls({ liveRate, pair }) {
+  const { base = 'EUR', quote = 'JPY', label = 'EUR/JPY', decimals = 2 } = pair ?? {}
+  const [calls,      setCalls]      = useState(() => loadCalls(base, quote))
   const [direction,  setDirection]  = useState('UP')
   const [timeframe,  setTimeframe]  = useState('7d')
   const [confidence, setConfidence] = useState(3)
 
+  // Reset calls when pair changes
+  useEffect(() => { setCalls(loadCalls(base, quote)) }, [base, quote])
+
   // Persist to localStorage
-  useEffect(() => { localStorage.setItem(LS_KEY, JSON.stringify(calls)) }, [calls])
+  useEffect(() => { localStorage.setItem(lsKey(base, quote), JSON.stringify(calls)) }, [calls, base, quote])
 
   // Auto-resolve matured calls
   useEffect(() => {
@@ -35,7 +51,7 @@ export default function MyCalls({ liveRate }) {
 
     Promise.all(
       pending.map(async (c) => {
-        const endRate = await fetchRateOnDate(c.resolveDate).catch(() => null)
+        const endRate = await fetchRateOnDate(c.resolveDate, base, quote).catch(() => null)
         if (!endRate) return null
         const won =
           (c.direction === 'UP'   && endRate > c.entryRate) ||
@@ -153,7 +169,7 @@ export default function MyCalls({ liveRate }) {
           </div>
           <button onClick={addCall} disabled={!liveRate}
             className="ml-auto px-4 py-2 text-xs bg-good/15 text-good border border-good/40 rounded hover:bg-good/25 transition-colors disabled:opacity-40">
-            Log @ {liveRate?.toFixed(2) ?? '—'}
+            Log @ {liveRate?.toFixed(decimals) ?? '—'}
           </button>
         </div>
       </div>
@@ -246,10 +262,10 @@ export default function MyCalls({ liveRate }) {
               {c.direction === 'UP' ? '▲' : '▼'}
             </span>
             <span className="text-white/50 w-8">{c.timeframe}</span>
-            <span className="text-white">{c.entryRate.toFixed(2)}</span>
+            <span className="text-white">{c.entryRate.toFixed(decimals)}</span>
             <span className="text-white/25">→</span>
             <span className={c.endRate ? 'text-white' : 'text-white/25'}>
-              {c.endRate?.toFixed(2) ?? `resolves ${c.resolveDate}`}
+              {c.endRate?.toFixed(decimals) ?? `resolves ${c.resolveDate}`}
             </span>
             <span className="text-neutral">{'★'.repeat(c.confidence)}</span>
             <span className="ml-auto font-semibold">

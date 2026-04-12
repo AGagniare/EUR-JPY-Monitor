@@ -22,7 +22,7 @@ function SignalBadge({ signal }) {
   )
 }
 
-export default function Dashboard({ liveRate, history, prices, histError }) {
+export default function Dashboard({ liveRate, history, prices, pair, histError }) {
   const [period, setPeriod] = useState('30d')
   const [showBB, setShowBB] = useState(false)
 
@@ -84,9 +84,9 @@ export default function Dashboard({ liveRate, history, prices, histError }) {
       <div className="flex items-center gap-4 flex-wrap">
         <div>
           <div className="text-4xl font-semibold text-white tracking-tight">
-            {liveRate?.toFixed(2) ?? '—'}
+            {liveRate?.toFixed(pair?.decimals ?? 2) ?? '—'}
           </div>
-          <div className="text-xs text-white/35 mt-1">EUR / JPY · Live</div>
+          <div className="text-xs text-white/35 mt-1">{pair?.label ?? 'EUR/JPY'} · Live</div>
         </div>
         <SignalBadge signal={signal} />
         {latestRSI !== null && (
@@ -204,7 +204,8 @@ export default function Dashboard({ liveRate, history, prices, histError }) {
         signal={signal}
         latestRSI={latestRSI}
         latestSMA30={latestSMA30}
-        events={EVENTS}
+        events={pair?.quote === 'JPY' ? EVENTS : []}
+        pair={pair}
       />
     </div>
   )
