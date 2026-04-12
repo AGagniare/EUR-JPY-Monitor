@@ -37,7 +37,7 @@ export function useEURJPY(days = 365) {
     try { return JSON.parse(sessionStorage.getItem(HIST_CACHE)) ?? [] } catch { return [] }
   })
   const [loading, setLoading] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem('eurjpy_live')) == null } catch { return true }
+    try { return JSON.parse(sessionStorage.getItem(LIVE_CACHE)) == null } catch { return true }
   })
   const [lastUpdated, setLastUpdated] = useState(null)
   const timerRef = useRef(null)
