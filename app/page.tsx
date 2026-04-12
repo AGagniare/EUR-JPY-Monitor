@@ -325,10 +325,10 @@ export default function Home() {
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {[
-                "French — Native",
-                "English — C1 (935 TOEIC)",
-                "Polish — Proficient",
-                "Japanese — Beginner",
+                "French · Native",
+                "English · C1 (935 TOEIC)",
+                "Polish · Proficient",
+                "Japanese · Beginner",
               ].map((lang) => (
                 <span
                   key={lang}
@@ -406,7 +406,7 @@ export default function Home() {
           <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 28 }}>
             {[
               {
-                period: "Apr 2026 — Present",
+                period: "Apr 2026 - Present",
                 school: "ISI Language School",
                 location: "Tokyo, Japan",
                 degree: "Japanese Language & Business",
@@ -414,7 +414,7 @@ export default function Home() {
                   "Intensive Japanese language program with a focus on business communication and cross-cultural professional practice.",
               },
               {
-                period: "2020 — 2025",
+                period: "2020 - 2025",
                 school: "EFREI Paris",
                 location: "France",
                 degree: "Master's in Computer Engineering",
@@ -562,7 +562,7 @@ export default function Home() {
         }}
       >
         <p style={{ fontSize: 12, color: T.body }}>
-          © {new Date().getFullYear()} Arthur Gagniare — Paris / Tokyo
+          © {new Date().getFullYear()} Arthur Gagniare · Paris / Tokyo
         </p>
       </footer>
     </div>
