@@ -51,7 +51,7 @@ export default function App() {
 
       {/* Content */}
       <main className="px-4 py-6 max-w-5xl mx-auto">
-        {loading && prices.length === 0 ? (
+        {loading ? (
           <div className="text-white/30 text-sm">Loading market data…</div>
         ) : (
           <>

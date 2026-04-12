@@ -26,6 +26,14 @@ export default function Dashboard({ liveRate, history, prices }) {
   const [period, setPeriod] = useState('30d')
   const [showBB, setShowBB] = useState(false)
 
+  if (!history.length) {
+    return (
+      <div className="text-white/30 text-sm py-8 text-center">
+        Unable to load historical data. Check your connection and refresh.
+      </div>
+    )
+  }
+
   const days = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 }[period]
   const slicedHistory = history.slice(-days)
   const slicedPrices  = slicedHistory.map((h) => h.rate)

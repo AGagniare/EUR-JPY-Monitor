@@ -68,7 +68,7 @@ export function useEURJPY(days = 365) {
           setHistory(hist)
           sessionStorage.setItem(HIST_CACHE, JSON.stringify(hist))
         }
-      } catch { /* keep cached */ }
+      } catch (e) { console.error('Historical fetch failed:', e) }
       finally { if (!cancelled) setLoading(false) }
     }
     init()
