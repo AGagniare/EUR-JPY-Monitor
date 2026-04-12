@@ -136,9 +136,9 @@ export default function Dashboard({ liveRate, history, prices }) {
       <div className="bg-card rounded-lg p-4">
         <div className="text-xs text-white/35 mb-2 uppercase tracking-widest">RSI (14)</div>
         <ResponsiveContainer width="100%" height={80}>
-          <BarChart data={rsiData}>
-            <XAxis hide />
-            <YAxis domain={[0, 100]} hide />
+          <BarChart data={rsiData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+            <XAxis hide height={0} />
+            <YAxis domain={[0, 100]} hide width={0} />
             <Tooltip
               contentStyle={{ background: '#1C1F26', border: '1px solid rgba(255,255,255,0.1)', fontSize: 11 }}
               formatter={(v) => [v?.toFixed(1), 'RSI']}
