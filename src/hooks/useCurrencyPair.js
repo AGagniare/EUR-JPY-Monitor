@@ -74,17 +74,46 @@ export function useCurrencyPair(base = 'EUR', quote = 'JPY', days = 365) {
     setHistError(null)
 
     async function refreshLive() {
-      try {
-        const res = await fetch(liveUrl)
-        if (!res.ok) throw new Error(`Live rate fetch failed: ${res.status}`)
-        const data = await res.json()
-        const rate = data?.rates?.[quote]
-        if (rate && !cancelled) {
-          setLiveRate(rate)
-          setLastUpdated(new Date())
-          sessionStorage.setItem(liveKey, JSON.stringify(rate))
+      const liveSources = [
+        async () => {
+          const res = await fetch(`https://open.er-api.com/v6/latest/${base}`)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const data = await res.json()
+          const rate = data?.rates?.[quote]
+          if (!rate) throw new Error('No rate in response')
+          return rate
+        },
+        async () => {
+          const res = await fetch(`https://api.frankfurter.dev/v1/latest?from=${base}&to=${quote}`)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const data = await res.json()
+          const rate = data?.rates?.[quote]
+          if (!rate) throw new Error('No rate in response')
+          return rate
+        },
+        async () => {
+          const res = await fetch(`https://api.frankfurter.app/latest?from=${base}&to=${quote}`)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const data = await res.json()
+          const rate = data?.rates?.[quote]
+          if (!rate) throw new Error('No rate in response')
+          return rate
+        },
+      ]
+      for (const source of liveSources) {
+        try {
+          const rate = await source()
+          if (!cancelled) {
+            setLiveRate(rate)
+            setLastUpdated(new Date())
+            sessionStorage.setItem(liveKey, JSON.stringify(rate))
+          }
+          return
+        } catch (e) {
+          console.warn('Live rate source failed, trying next:', e)
         }
-      } catch { /* keep last known rate */ }
+      }
+      /* all sources failed — keep last known rate */
     }
 
     async function init() {
