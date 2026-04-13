@@ -46,7 +46,6 @@ async function fetchHistorical(base, quote, days) {
 export function useCurrencyPair(base = 'EUR', quote = 'JPY', days = 365) {
   const liveKey = `${base}${quote}_live`
   const histKey = `${base}${quote}_hist`
-  const liveUrl = `https://open.er-api.com/v6/latest/${base}`
 
   const [liveRate, setLiveRate] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem(liveKey)) } catch { return null }
@@ -74,35 +73,17 @@ export function useCurrencyPair(base = 'EUR', quote = 'JPY', days = 365) {
     setHistError(null)
 
     async function refreshLive() {
-      const liveSources = [
-        async () => {
-          const res = await fetch(`https://open.er-api.com/v6/latest/${base}`)
-          if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          const data = await res.json()
-          const rate = data?.rates?.[quote]
-          if (!rate) throw new Error('No rate in response')
-          return rate
-        },
-        async () => {
-          const res = await fetch(`https://api.frankfurter.dev/v1/latest?from=${base}&to=${quote}`)
-          if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          const data = await res.json()
-          const rate = data?.rates?.[quote]
-          if (!rate) throw new Error('No rate in response')
-          return rate
-        },
-        async () => {
-          const res = await fetch(`https://api.frankfurter.app/latest?from=${base}&to=${quote}`)
-          if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          const data = await res.json()
-          const rate = data?.rates?.[quote]
-          if (!rate) throw new Error('No rate in response')
-          return rate
-        },
+      const urls = [
+        `https://api.frankfurter.dev/v1/latest?from=${base}&to=${quote}`,
+        `https://api.frankfurter.app/latest?from=${base}&to=${quote}`,
       ]
-      for (const source of liveSources) {
+      for (const url of urls) {
         try {
-          const rate = await source()
+          const res = await fetch(url)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const data = await res.json()
+          const rate = data?.rates?.[quote]
+          if (!rate) throw new Error('No rate in response')
           if (!cancelled) {
             setLiveRate(rate)
             setLastUpdated(new Date())
@@ -110,7 +91,7 @@ export function useCurrencyPair(base = 'EUR', quote = 'JPY', days = 365) {
           }
           return
         } catch (e) {
-          console.warn('Live rate source failed, trying next:', e)
+          console.warn(`Live rate fetch failed for ${url}:`, e)
         }
       }
       /* all sources failed — keep last known rate */
