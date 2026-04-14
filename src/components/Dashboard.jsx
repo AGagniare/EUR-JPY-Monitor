@@ -44,30 +44,25 @@ export default function Dashboard({ liveRate, history, prices, pair, histError }
   }
 
   const days = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 }[period]
-  const slicedHistory = history.slice(-days)
+  const todayStr = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local timezone
+
+  // Strip today from historical data — we always replace it with liveRate
+  const slicedHistory = history.slice(-days).filter((h) => h.date !== todayStr)
   const slicedPrices  = slicedHistory.map((h) => h.rate)
 
   const { sma7, sma30, rsi14, bb, signal, latestRSI, latestSMA30 } = useIndicators(slicedPrices)
 
   const chartData = slicedHistory.map((h, i) => ({
-    date:      h.date,
-    rate:      h.rate,
-    sma7:      sma7[i]         ?? null,
-    sma30:     sma30[i]        ?? null,
-    bbUpper:   bb[i]?.upper    ?? null,
-    bbLower:   bb[i]?.lower    ?? null,
+    date:    h.date,
+    rate:    h.rate,
+    sma7:    sma7[i]      ?? null,
+    sma30:   sma30[i]     ?? null,
+    bbUpper: bb[i]?.upper ?? null,
+    bbLower: bb[i]?.lower ?? null,
   }))
 
-  // Append today's live rate as the last point, always using local date
-  const todayStr = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local timezone
   if (liveRate) {
-    const last = chartData[chartData.length - 1]
-    if (last && last.date === todayStr) {
-      // Update existing today point with latest live rate
-      last.rate = liveRate
-    } else {
-      chartData.push({ date: todayStr, rate: liveRate, sma7: null, sma30: null, bbUpper: null, bbLower: null })
-    }
+    chartData.push({ date: todayStr, rate: liveRate, sma7: null, sma30: null, bbUpper: null, bbLower: null })
   }
 
   const rsiData = slicedHistory.map((h, i) => ({
