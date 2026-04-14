@@ -73,17 +73,35 @@ export function useCurrencyPair(base = 'EUR', quote = 'JPY', days = 365) {
     setHistError(null)
 
     async function refreshLive() {
-      const urls = [
-        `https://api.frankfurter.dev/v1/latest?from=${base}&to=${quote}`,
-        `https://api.frankfurter.app/latest?from=${base}&to=${quote}`,
-      ]
-      for (const url of urls) {
-        try {
-          const res = await fetch(url)
+      const liveSources = [
+        async () => {
+          const res = await fetch(`https://open.er-api.com/v6/latest/${base}`)
           if (!res.ok) throw new Error(`HTTP ${res.status}`)
           const data = await res.json()
           const rate = data?.rates?.[quote]
           if (!rate) throw new Error('No rate in response')
+          return rate
+        },
+        async () => {
+          const res = await fetch(`https://api.frankfurter.dev/v1/latest?from=${base}&to=${quote}`)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const data = await res.json()
+          const rate = data?.rates?.[quote]
+          if (!rate) throw new Error('No rate in response')
+          return rate
+        },
+        async () => {
+          const res = await fetch(`https://api.frankfurter.app/latest?from=${base}&to=${quote}`)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          const data = await res.json()
+          const rate = data?.rates?.[quote]
+          if (!rate) throw new Error('No rate in response')
+          return rate
+        },
+      ]
+      for (const source of liveSources) {
+        try {
+          const rate = await source()
           if (!cancelled) {
             setLiveRate(rate)
             setLastUpdated(new Date())
@@ -91,7 +109,7 @@ export function useCurrencyPair(base = 'EUR', quote = 'JPY', days = 365) {
           }
           return
         } catch (e) {
-          console.warn(`Live rate fetch failed for ${url}:`, e)
+          console.warn('Live rate source failed, trying next:', e)
         }
       }
       /* all sources failed — keep last known rate */
