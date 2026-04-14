@@ -58,10 +58,16 @@ export default function Dashboard({ liveRate, history, prices, pair, histError }
     bbLower:   bb[i]?.lower    ?? null,
   }))
 
-  // Append today's live rate if it's not already the last data point
-  const todayStr = new Date().toISOString().split('T')[0]
-  if (liveRate && chartData.length && chartData[chartData.length - 1].date !== todayStr) {
-    chartData.push({ date: todayStr, rate: liveRate, sma7: null, sma30: null, bbUpper: null, bbLower: null })
+  // Append today's live rate as the last point, always using local date
+  const todayStr = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local timezone
+  if (liveRate) {
+    const last = chartData[chartData.length - 1]
+    if (last && last.date === todayStr) {
+      // Update existing today point with latest live rate
+      last.rate = liveRate
+    } else {
+      chartData.push({ date: todayStr, rate: liveRate, sma7: null, sma30: null, bbUpper: null, bbLower: null })
+    }
   }
 
   const rsiData = slicedHistory.map((h, i) => ({
