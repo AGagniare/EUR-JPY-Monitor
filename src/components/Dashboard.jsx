@@ -61,8 +61,10 @@ export default function Dashboard({ liveRate, history, prices, pair, histError }
     bbLower: bb[i]?.lower ?? null,
   }))
 
-  if (liveRate) {
-    chartData.push({ date: todayStr, rate: liveRate, sma7: null, sma30: null, bbUpper: null, bbLower: null })
+  // Always append today — use liveRate if available, else carry forward last known rate
+  const todayRate = liveRate ?? slicedHistory[slicedHistory.length - 1]?.rate ?? null
+  if (todayRate !== null) {
+    chartData.push({ date: todayStr, rate: todayRate, sma7: null, sma30: null, bbUpper: null, bbLower: null })
   }
 
   const rsiData = slicedHistory.map((h, i) => ({
